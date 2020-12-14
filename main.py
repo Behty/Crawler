@@ -1,5 +1,6 @@
 import os
 import xlrd
+import fnmatch
 from tkinter import *
 from tkinter import ttk
 from functools import partial
@@ -8,15 +9,17 @@ VNC_PATH = 'O:\!VNC'
 BD_PATH = 'hardData.xlsx'
 
 
-def open_vnc(path):
-    '''Функция открывает папку с VNC'''
-    try:
-        os.startfile(path)
-    except Exception:
-        print('Не могу открыть каталог VNC!')
+def open_vnc(path: str) -> None:
+    '''Функция запускает сеанс VNC на компьютер пользователя'''
+
+    target = output_data_lbl54.cget("text")
+    for root, dirs, files in os.walk(path):
+        for name in files:
+            if fnmatch.fnmatch(name, f'{target}*'):
+                os.startfile(os.path.join(root, name))
 
 
-def data_crawler(path):
+def data_crawler(path: str) -> None:
     '''Функция отрисовывает и заполняет данными окно с результатами поиска'''
     
     #Отрисовка окна с результатами поиска
@@ -44,15 +47,35 @@ def data_crawler(path):
     try:
         excel_data_file = xlrd.open_workbook(path)
     except Exception:
-        print('Не могу открыть файл базы данных!')
+        output_data_lbl03.grid_remove()
+        output_data_lbl04.grid_remove()
+        output_data_lbl13.grid_remove()
+        output_data_lbl14.grid_remove()
+        output_data_lbl23.grid_remove()
+        output_data_lbl24.grid_remove()
+        output_data_lbl33.grid_remove()
+        output_data_lbl34.grid_remove()
+        output_data_lbl35.grid_remove()
+        output_data_lbl36.grid_remove()
+        output_data_lbl43.grid_remove()
+        output_data_lbl44.grid_remove()
+        output_data_lbl45.grid_remove()
+        output_data_lbl46.grid_remove()
+        output_data_lbl53.grid_remove()
+        output_data_lbl54.grid_remove()
+        vnc_but.grid_remove()
+        nomatches_lbl.grid(row=0, column=3, rowspan=6, columnspan=4, padx=10)
+        nomatches_lbl.config(width=34, text='Не могу открыть файл базы данных!')
+        return None
     sheet = excel_data_file.sheet_by_index(0)
     row_number = sheet.nrows
     if row_number > 0:
         for row in range(1, row_number):
-            if request in str(sheet.row(row)[0]).replace('text:','').replace("'", '').replace('ё', 'е').lower() or \
+            if all([(request != ''), (request != ' '), \
+            (request in str(sheet.row(row)[0]).replace('text:','').replace("'", '').replace('ё', 'е').lower() or \
             request in str(sheet.row(row)[1]).replace('text:','').replace("'", '').replace('ё', 'е').lower() or \
             request in str(sheet.row(row)[3]).replace('number:','').replace(".0", '') or \
-            request in str(sheet.row(row)[4]).replace('text:','').replace("'", '').replace('ё', 'е').lower():
+            request in str(sheet.row(row)[4]).replace('text:','').replace("'", '').replace('ё', 'е').lower())]):
                 response.append(str(sheet.row(row)[6]).replace('text:','').replace("'", '').replace('empty:', '<нет данных>'))
                 response.append(str(sheet.row(row)[5]).replace('text:','').replace("'", '').replace('empty:', '<нет данных>'))
                 response.append(str(sheet.row(row)[0]).replace('text:','').replace("'", ''))
@@ -107,7 +130,7 @@ def data_crawler(path):
 
 #Инициализация главного окна
 root = Tk()
-root.title('Crawler v4.0')
+root.title('Crawler v5.0')
 root.geometry('+300+200')
 root.resizable(False, False)
 
