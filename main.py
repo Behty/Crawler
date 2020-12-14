@@ -10,6 +10,12 @@ VNC_PATH = 'O:\!VNC'
 BD_PATH = 'hardData.xlsx'
 
 
+def press(event) -> None:
+    '''Функция запускает поиск информации по нажатию клавиши'''
+    
+    data_crawler(BD_PATH)
+
+
 def open_vnc(path: str) -> None:
     '''Функция запускает сеанс VNC на компьютер пользователя'''
 
@@ -141,7 +147,7 @@ def data_crawler(path: str) -> None:
 
 #Инициализация главного окна
 root = Tk()
-root.title('Crawler v6.0')
+root.title('Crawler v7.0')
 root.geometry('+300+200')
 root.resizable(False, False)
 
@@ -176,6 +182,9 @@ vnc_but = ttk.Button(text='VNC', command=partial(open_vnc, VNC_PATH), style='TBu
 rdp_but = ttk.Button(text='RDP', command=open_rdp, style='TButton')
 show_but = ttk.Button(text='Вывод', command=partial(data_crawler, BD_PATH), style='TButton')
 show_but.grid(row=0, column=7, rowspan=6, ipady=10, ipadx=10, pady=60, padx=20)
+
+#Обработка нажатия клавиши "Enter"
+root.bind('<Return>', press)
 
 #Поместить курсор в окно поиска
 input_data.focus()
