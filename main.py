@@ -1,4 +1,5 @@
 import os
+import time
 import xlrd
 import ctypes
 import fnmatch
@@ -6,11 +7,11 @@ import pyperclip
 import subprocess
 from tkinter import *
 from tkinter import ttk
-from ttkthemes import ThemedTk
 from functools import partial
+from ttkthemes import ThemedTk
 
-VNC_PATH = 'O:\\!VNC'
-BD_PATH = 'O:\\ViPNet\\OldBase\\hardData.xlsx'
+VNC_PATH = './VNC'
+BD_PATH = './exampleData.xlsx'
 
 
 def press(event) -> None:
@@ -29,8 +30,16 @@ def click(event) -> None:
 
 
 def copy_to_clipboard(lbl) -> None:
-	'''Функция копирует текст из метки в буфер обмена'''
-	pyperclip.copy(lbl.cget('text'))
+    '''Функция копирует текст из метки в буфер обмена'''
+    pyperclip.copy(lbl.cget('text'))
+    lbl_text = lbl.cget('text')
+    lbl['text'] = '<cкопировано>'
+    root.after(1000, label_animation, lbl, lbl_text)
+
+
+def label_animation(lbl_id, lbl_value: str) -> None:
+    '''Функция реализует визуальный эффект анимации при клике на метки'''
+    lbl_id['text'] = lbl_value
 
 
 def get_language() -> None:
@@ -38,9 +47,9 @@ def get_language() -> None:
     lib = ctypes.windll.LoadLibrary('user32.dll')
     keylay = getattr(lib, 'GetKeyboardLayout')
     if hex(keylay(0)) == '0x4190419':
-        language_lbl.config(text='ru')
+        language_lbl.config(text='RU')
     if hex(keylay(0)) == '0x4090409':
-        language_lbl.config(text='en')
+        language_lbl.config(text='EN')
 
 
 def open_vnc(path: str) -> None:
@@ -172,23 +181,23 @@ def data_crawler(path: str) -> None:
 #Инициализация главного окна
 root = ThemedTk(theme='breeze')
 root.geometry('+300+200')
-root.title('Crawler v9.0')
+root.title('Crawler v10.0')
 root.resizable(False, False)
 root.iconbitmap('spider.ico')
 root.config(bd=5, relief=RIDGE)
 
 #Задание стиля для кнопок
 button_style = ttk.Style(root)
-button_style.configure('TButton', font=('Lucida Console', 10))
+button_style.configure('TButton', font=('Lucida Console', 10), activebackground='900C3F', highlightforeground='900C3F')
 
 #Отрисовка интерфейса
 search_lbl = ttk.Label(text='Поиск: ', font=('Lucida Console', 10))
 search_lbl.grid(row=1, column=0, rowspan=6, sticky=E, padx=(20, 5), pady=20)
-language_lbl = ttk.Label(text='RU', font=('Lucida Console', 10))
+language_lbl = Label(bg='#900C3F', fg='#FFFFFF', text='RU', font=('Lucida Console', 9))
 language_lbl.grid(row=2, column=0, rowspan=5, sticky=SW, padx=(20, 5), pady=(0, 10))
-header_lbl = Label(bg='#900C3F', fg='#FFFFFF', font=('Lucida Console', 10), text='IT-Crawler!')
+header_lbl = Label(bg='#900C3F', fg='#FFFFFF', text='IT-Crawler!', font=('Lucida Console', 10))
 header_lbl.grid(row=0, columnspan=8, sticky=W+E)
-footer_lbl = Label(height=2, bg='#900C3F', fg='#FFFFFF', font=('Lucida Console', 10), text='© 2020 «Crawler»')
+footer_lbl = Label(height=2, bg='#900C3F', fg='#FFFFFF', text='© 2020 «Crawler»', font=('Lucida Console', 10))
 footer_lbl.grid(row=8, columnspan=8, sticky=W+E)
 
 res_lbl = ttk.Label(text='Результат: ', font=('Lucida Console', 10))
