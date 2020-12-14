@@ -1,6 +1,7 @@
 import os
 import xlrd
 import fnmatch
+import subprocess
 from tkinter import *
 from tkinter import ttk
 from functools import partial
@@ -9,14 +10,27 @@ VNC_PATH = 'O:\!VNC'
 BD_PATH = 'hardData.xlsx'
 
 
+def press(event) -> None:
+    '''Функция запускает поиск информации по нажатию клавиши'''
+    
+    data_crawler(BD_PATH)
+
+
 def open_vnc(path: str) -> None:
     '''Функция запускает сеанс VNC на компьютер пользователя'''
 
-    target = output_data_lbl54.cget("text")
+    target = output_data_lbl54.cget('text')
     for root, dirs, files in os.walk(path):
         for name in files:
             if fnmatch.fnmatch(name, f'{target}*'):
                 os.startfile(os.path.join(root, name))
+
+
+def open_rdp() -> None:
+    '''Функция запускает сеанс RDP на компьютер пользователя'''
+    
+    target = output_data_lbl54.cget('text')
+    subprocess.run(['mstsc.exe', f'/v:{target}'])
 
 
 def data_crawler(path: str) -> None:
@@ -64,6 +78,7 @@ def data_crawler(path: str) -> None:
         output_data_lbl53.grid_remove()
         output_data_lbl54.grid_remove()
         vnc_but.grid_remove()
+        rdp_but.grid_remove()
         nomatches_lbl.grid(row=0, column=3, rowspan=6, columnspan=4, padx=10)
         nomatches_lbl.config(width=34, text='Не могу открыть файл базы данных!')
         return None
@@ -104,7 +119,8 @@ def data_crawler(path: str) -> None:
             output_data_lbl46.config(text=response[7])
             output_data_lbl53.config(text='Имя ПК: ')
             output_data_lbl54.config(text=response[5])
-            vnc_but.grid(row=5, column=5, columnspan=2, sticky=W, padx=7, pady=(5, 20))
+            vnc_but.grid(row=5, column=5, sticky=W, padx=7, pady=(5, 20))
+            rdp_but.grid(row=5, column=6, sticky=W, padx=7, pady=(5, 20))
             nomatches_lbl.grid_remove()
         else:
             output_data_lbl03.grid_remove()
@@ -124,13 +140,14 @@ def data_crawler(path: str) -> None:
             output_data_lbl53.grid_remove()
             output_data_lbl54.grid_remove()
             vnc_but.grid_remove()
+            rdp_but.grid_remove()
             nomatches_lbl.grid(row=0, column=3, rowspan=6, padx=10)
             nomatches_lbl.config(text='Совпадений не найдено')
 
 
 #Инициализация главного окна
 root = Tk()
-root.title('Crawler v5.0')
+root.title('Crawler v7.0')
 root.geometry('+300+200')
 root.resizable(False, False)
 
@@ -162,8 +179,12 @@ nomatches_lbl = ttk.Label(width=22, font=('Lucida Console', 10, 'bold'))
 input_data = ttk.Entry(width=15)
 input_data.grid(row=0, column=1, rowspan=6, sticky=W, pady=10)
 vnc_but = ttk.Button(text='VNC', command=partial(open_vnc, VNC_PATH), style='TButton')
+rdp_but = ttk.Button(text='RDP', command=open_rdp, style='TButton')
 show_but = ttk.Button(text='Вывод', command=partial(data_crawler, BD_PATH), style='TButton')
 show_but.grid(row=0, column=7, rowspan=6, ipady=10, ipadx=10, pady=60, padx=20)
+
+#Обработка нажатия клавиши "Enter"
+root.bind('<Return>', press)
 
 #Поместить курсор в окно поиска
 input_data.focus()
