@@ -1,12 +1,13 @@
 import os
 import xlrd
+import ctypes
 import fnmatch
 import subprocess
 from tkinter import *
 from tkinter import ttk
 from functools import partial
 
-VNC_PATH = 'O:\!VNC'
+VNC_PATH = 'O:\\!VNC'
 BD_PATH = 'hardData.xlsx'
 
 
@@ -14,6 +15,23 @@ def press(event) -> None:
     '''Функция запускает поиск информации по нажатию клавиши'''
     
     data_crawler(BD_PATH)
+
+
+def release(event) -> None:
+    '''Функция отслеживает изменение языка клавиатуры по отжатию клавиш'''
+    
+    get_language()
+
+
+def get_language():
+    '''Функция определяет текущий язык ввода текста'''
+    
+    lib = ctypes.windll.LoadLibrary('user32.dll')
+    keylay = getattr(lib, 'GetKeyboardLayout')
+    if hex(keylay(0)) == '0x4190419':
+        language_lbl.config(text='ru')
+    if hex(keylay(0)) == '0x4090409':
+        language_lbl.config(text='en')
 
 
 def open_vnc(path: str) -> None:
@@ -147,17 +165,20 @@ def data_crawler(path: str) -> None:
 
 #Инициализация главного окна
 root = Tk()
-root.title('Crawler v7.0')
+root.title('Crawler v8.0')
 root.geometry('+300+200')
 root.resizable(False, False)
 
-#Задание стиля кнопкам
+#Задание стиля для кнопок
 button_style = ttk.Style(root)
 button_style.configure('TButton', font=('Lucida Console', 10))
 
 #Отрисовка интерфейса
 search_lbl = ttk.Label(text='Поиск: ', font=('Lucida Console', 10))
 search_lbl.grid(row=0, column=0, rowspan=6, sticky=E, padx=(20, 5), pady=20)
+language_lbl = ttk.Label(text='RU', font=('Lucida Console', 10))
+language_lbl.grid(row=2, column=0, rowspan=6, sticky=SW, padx=(20, 5), pady=10)
+
 res_lbl = ttk.Label(text='Результат: ', font=('Lucida Console', 10))
 output_data_lbl03 = ttk.Label(width=10, font=('Lucida Console', 10, 'bold'))
 output_data_lbl04 = ttk.Label(font=('Lucida Console', 10), anchor=W)
@@ -176,17 +197,21 @@ output_data_lbl46 = ttk.Label(width=15, font=('Lucida Console', 10), foreground=
 output_data_lbl53 = ttk.Label(width=10, font=('Lucida Console', 10, 'bold'))
 output_data_lbl54 = ttk.Label(font=('Lucida Console', 10))
 nomatches_lbl = ttk.Label(width=22, font=('Lucida Console', 10, 'bold'))
-input_data = ttk.Entry(width=15)
+
+input_data = ttk.Entry(width=20)
 input_data.grid(row=0, column=1, rowspan=6, sticky=W, pady=10)
+
 vnc_but = ttk.Button(text='VNC', command=partial(open_vnc, VNC_PATH), style='TButton')
 rdp_but = ttk.Button(text='RDP', command=open_rdp, style='TButton')
 show_but = ttk.Button(text='Вывод', command=partial(data_crawler, BD_PATH), style='TButton')
 show_but.grid(row=0, column=7, rowspan=6, ipady=10, ipadx=10, pady=60, padx=20)
 
-#Обработка нажатия клавиши "Enter"
+#Обработка событий нажатия клавиш
 root.bind('<Return>', press)
+root.bind('<KeyRelease>', release)
 
 #Поместить курсор в окно поиска
 input_data.focus()
 
+get_language()
 root.mainloop()
