@@ -3,18 +3,19 @@ import xlrd
 import ctypes
 import fnmatch
 import pyperclip
+import pyautogui
 import subprocess
 from tkinter import *
 from tkinter import ttk
 from functools import partial
 
-VNC_PATH = './VNC'
-BD_PATH = './exampleData.xlsx'
-ICON_PATH = './spider.ico'
+VNC_PATH = 'VNC'
+BD_PATH = 'exampleData.xlsx'
+ICON_PATH = 'spider.ico'
 
 
 def press(event) -> None:
-    """Функция запускает поиск информации по нажатию клавиши."""
+    """Функция запускает поиск информации по нажатию клавиши Enter."""
 
     data_crawler(BD_PATH)
 
@@ -34,10 +35,12 @@ def click(event) -> None:
 def copy_to_clipboard(lbl) -> None:
     """Функция копирует текст из метки в буфер обмена."""
 
-    pyperclip.copy(lbl.cget('text'))
-    lbl_text = lbl.cget('text')
-    lbl['text'] = '<cкопировано>'
-    root.after(1000, label_animation, lbl, lbl_text)
+    output_labels = ('.!label18', '.!label14', '.!label20', '.!label16', '.!label12', '.!label10', '.!label8', '.!label6')
+    if str(lbl) in output_labels:
+        pyperclip.copy(lbl.cget('text'))
+        lbl_text = lbl.cget('text')
+        lbl['text'] = '<cкопировано>'
+        root.after(1000, label_animation, lbl, lbl_text)
 
 
 def label_animation(lbl_id, lbl_value: str) -> None:
@@ -60,7 +63,9 @@ def get_language() -> None:
 def change_language() -> None:
     """Функция меняет язык ввода текста."""
 
-    pass
+    pyautogui.keyDown('alt')
+    pyautogui.press('shift')
+    pyautogui.keyUp('alt')
 
 
 def open_vnc(path: str) -> None:
@@ -86,25 +91,32 @@ def open_rdp() -> None:
     subprocess.run(['mstsc.exe', f'/v:{target}'])
 
 
+def get_ping() -> None:
+    """Функция выполняет ping до выбранной рабочей станции."""
+
+    target = output_data_lbl64.cget('text')
+    os.system(f'cmd.exe /K "ping {target}"')
+
+
 def data_crawler(path: str) -> None:
     """Функция отрисовывает и заполняет данными окно с результатами поиска."""
     
     # Отрисовка окна с результатами поиска
     res_lbl.grid(row=1, column=2, rowspan=6, sticky=W, padx=(20, 5), pady=20)
     output_data_lbl13.grid(row=1, column=3, sticky=E, padx=5, pady=(20, 5))
-    output_data_lbl14.grid(row=1, column=4, sticky=W, padx=5, pady=(20, 5), columnspan=3)
+    output_data_lbl14.grid(row=1, column=4, sticky=W, padx=5, pady=(20, 5), columnspan=4)
     output_data_lbl23.grid(row=2, column=3, sticky=E, padx=5, pady=5)
-    output_data_lbl24.grid(row=2, column=4, sticky=W, padx=5, pady=5, columnspan=3)
+    output_data_lbl24.grid(row=2, column=4, sticky=W, padx=5, pady=5, columnspan=4)
     output_data_lbl33.grid(row=3, column=3, sticky=E, padx=5, pady=5)
-    output_data_lbl34.grid(row=3, column=4, sticky=W, padx=5, pady=5, columnspan=3)
+    output_data_lbl34.grid(row=3, column=4, sticky=W, padx=5, pady=5, columnspan=4)
     output_data_lbl43.grid(row=4, column=3, sticky=E, padx=5, pady=5)
     output_data_lbl44.grid(row=4, column=4, padx=5, pady=5)
-    output_data_lbl45.grid(row=4, column=5, sticky=E, padx=5, pady=5)
-    output_data_lbl46.grid(row=4, column=6, sticky=E, padx=5, pady=5)
+    output_data_lbl45.grid(row=4, column=5, sticky=W, padx=(30, 5), pady=5)
+    output_data_lbl46.grid(row=4, column=6, sticky=W, padx=(25, 5), pady=5, columnspan=2)
     output_data_lbl53.grid(row=5, column=3, sticky=E, padx=5, pady=5)
     output_data_lbl54.grid(row=5, column=4, sticky=E, padx=5, pady=5)
-    output_data_lbl55.grid(row=5, column=5, sticky=E, padx=5, pady=5)
-    output_data_lbl56.grid(row=5, column=6, sticky=E, padx=5, pady=5)
+    output_data_lbl55.grid(row=5, column=5, sticky=W, padx=(30, 5), pady=5)
+    output_data_lbl56.grid(row=5, column=6, sticky=W, padx=(25, 5), pady=5, columnspan=2)
     output_data_lbl63.grid(row=6, column=3, sticky=E, padx=5, pady=(5, 20))
     output_data_lbl64.grid(row=6, column=4, sticky=W, padx=5, pady=(5, 20))
 
@@ -132,7 +144,8 @@ def data_crawler(path: str) -> None:
         output_data_lbl64.grid_remove()
         vnc_but.grid_remove()
         rdp_but.grid_remove()
-        no_matches_lbl.grid(row=1, column=3, rowspan=6, columnspan=4, padx=10)
+        ping_but.grid_remove()
+        no_matches_lbl.grid(row=1, column=3, rowspan=6, columnspan=5, padx=10)
         no_matches_lbl.config(width=34, text='Не могу открыть файл базы данных!')
         return None
     sheet = excel_data_file.sheet_by_index(0)
@@ -172,8 +185,9 @@ def data_crawler(path: str) -> None:
             output_data_lbl56.config(text=response[7])
             output_data_lbl63.config(text='Имя ПК: ')
             output_data_lbl64.config(text=response[5])
-            vnc_but.grid(row=6, column=5, sticky=W, padx=7, pady=(5, 20))
-            rdp_but.grid(row=6, column=6, sticky=W, padx=7, pady=(5, 20))
+            vnc_but.grid(row=6, column=5, sticky=W, pady=(5, 20))
+            rdp_but.grid(row=6, column=6, sticky=W, pady=(5, 20))
+            ping_but.grid(row=6, column=7, sticky=W, padx=(13, 0), pady=(5, 20))
             no_matches_lbl.grid_remove()
         else:
             output_data_lbl13.grid_remove()
@@ -194,14 +208,15 @@ def data_crawler(path: str) -> None:
             output_data_lbl64.grid_remove()
             vnc_but.grid_remove()
             rdp_but.grid_remove()
+            ping_but.grid_remove()
             no_matches_lbl.grid(row=1, column=3, rowspan=6, padx=10)
             no_matches_lbl.config(text='Совпадений не найдено')
 
 
 # Инициализация главного окна
 root = Tk()
-root.geometry('+300+200')
-root.title('Crawler v11.0')
+root.geometry('+250+200')
+root.title('Crawler v12.0')
 root.resizable(False, False)
 root.iconbitmap(ICON_PATH)
 root.config(bd=5, relief=RIDGE)
@@ -214,9 +229,9 @@ button_style.configure('TButton', font=('Lucida Console', 10), background='#900C
 search_lbl = ttk.Label(text='Поиск: ', font=('Lucida Console', 10))
 search_lbl.grid(row=1, column=0, rowspan=6, sticky=E, padx=(20, 5), pady=20)
 header_lbl = Label(bg='#900C3F', fg='#FFFFFF', text='IT-Crawler!', font=('Lucida Console', 10))
-header_lbl.grid(row=0, columnspan=8, sticky=W + E)
+header_lbl.grid(row=0, columnspan=9, sticky=W + E)
 footer_lbl = Label(height=2, bg='#900C3F', fg='#FFFFFF', text='© 2020 «Crawler»', font=('Lucida Console', 10))
-footer_lbl.grid(row=8, columnspan=8, sticky=W + E)
+footer_lbl.grid(row=8, columnspan=9, sticky=W + E)
 
 res_lbl = ttk.Label(text='Результат: ', font=('Lucida Console', 10))
 output_data_lbl13 = ttk.Label(width=10, font=('Lucida Console', 10, 'bold'))
@@ -226,28 +241,29 @@ output_data_lbl24 = ttk.Label(font=('Lucida Console', 10), cursor='spider')
 output_data_lbl33 = ttk.Label(width=10, font=('Lucida Console', 10, 'bold'))
 output_data_lbl34 = ttk.Label(font=('Lucida Console', 10), cursor='spider')
 output_data_lbl43 = ttk.Label(width=10, font=('Lucida Console', 10, 'bold'))
-output_data_lbl44 = ttk.Label(width=15, font=('Lucida Console', 10), foreground='#900C3F', cursor='spider')
+output_data_lbl44 = ttk.Label(width=14, font=('Lucida Console', 10), foreground='#900C3F', cursor='spider')
 output_data_lbl45 = ttk.Label(width=8, font=('Lucida Console', 10, 'bold'))
 output_data_lbl46 = ttk.Label(width=15, font=('Lucida Console', 10), foreground='#900C3F', cursor='spider')
 output_data_lbl53 = ttk.Label(width=10, font=('Lucida Console', 10, 'bold'))
-output_data_lbl54 = ttk.Label(width=15, font=('Lucida Console', 10), cursor='spider')
+output_data_lbl54 = ttk.Label(width=14, font=('Lucida Console', 10), cursor='spider')
 output_data_lbl55 = ttk.Label(width=8, font=('Lucida Console', 10, 'bold'))
 output_data_lbl56 = ttk.Label(width=15, font=('Lucida Console', 10), foreground='#900C3F', cursor='spider')
 output_data_lbl63 = ttk.Label(width=10, font=('Lucida Console', 10, 'bold'))
-output_data_lbl64 = ttk.Label(font=('Lucida Console', 10), cursor='spider')
+output_data_lbl64 = ttk.Label(width=14, font=('Lucida Console', 10), cursor='spider')
 no_matches_lbl = ttk.Label(width=22, font=('Lucida Console', 10, 'bold'))
 
-input_data = ttk.Entry(width=20)
+input_data = ttk.Entry(width=30)
 input_data.grid(row=1, column=1, rowspan=6, sticky=W, pady=10)
 
 vnc_but = ttk.Button(text='VNC', command=partial(open_vnc, VNC_PATH), cursor='dotbox')
 rdp_but = ttk.Button(text='RDP', command=open_rdp, cursor='dotbox')
+ping_but = ttk.Button(text='PING', command=get_ping, cursor='dotbox')
 language_but = Button(text='RU', font=('Lucida Console', 9), bg='#900C3F', fg='#FFFFFF', relief='flat',command=change_language)
 language_but.grid(row=2, column=0, rowspan=5, sticky=SW, padx=(20, 5), pady=(0, 10))
 VNC_folder_but = Button(text='VNC', font=('Lucida Console', 9), bg='#900C3F', fg='#FFFFFF', relief='flat',command=open_vnc_folder)
 VNC_folder_but.grid(row=2, column=0, rowspan=5, sticky=SW, padx=(50, 5), pady=(0, 10))
 show_but = ttk.Button(text='Вывод', command=partial(data_crawler, BD_PATH))
-show_but.grid(row=1, column=7, rowspan=6, ipady=10, ipadx=10, pady=60, padx=20)
+show_but.grid(row=1, column=8, rowspan=6, ipady=10, ipadx=10, pady=60, padx=20)
 
 # Обработка событий нажатия клавиш
 output_data_lbl13.bind('<Button-1>', click)
